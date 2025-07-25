@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  webserver:
+    image: nginx:latest
+    container_name: my_web_server
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/www:/usr/share/nginx/html
+    restart: unless-stopped
+
+networks:
+  default:
+    name: my_web_network

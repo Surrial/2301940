@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Web App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Home Page</h1>
+        <p>Enter a term below to start a search.</p>
+
+        <!-- Search Form -->
+        <form action="/search" method="GET">
+            <input type="text" id="searchTerm" name="query" placeholder="Enter a search term..." required>
+            <input type="submit" value="Search">
+        </form>
+    </div>
+    <script>
+    const form = document.querySelector('form');
+    const inputField = document.getElementById('searchTerm');
+
+    // Function to detect common SQL injection patterns
+    function isSQLInjection(input) {
+        // Common SQLi patterns (case-insensitive)
+        const sqlPatterns = [
+            /('|"|;|--|#|\/\*|\*\/)/i, // quotes, semicolon, comment markers
+            /\b(select|insert|update|delete|drop|union|alter|create|exec|xp_|or|and)\b/i, // SQL keywords
+            /\b(1\s*=\s*1|0\s*=\s*0)\b/i // tautologies
+        ];
+        return sqlPatterns.some(pattern => pattern.test(input));
+    }
+
+    form.addEventListener('submit', function(e) {
+        const input = inputField.value;
+        // Only allow letters, numbers, spaces, and a few safe symbols
+        const safePattern = /^[a-zA-Z0-9 _\-.,!?()]+$/;
+        if (!safePattern.test(input) || input.length > 100) {
+            alert('Invalid input: Only letters, numbers, spaces, and _-.,!?() are allowed, and max length is 100.');
+            inputField.value = '';
+            e.preventDefault();
+            return false;
+        }
+        // SQL injection detection
+        if (isSQLInjection(input)) {
+            alert('Invalid input: Possible SQL injection detected.');
+            inputField.value = '';
+            e.preventDefault();
+            return false;
+        }
+        // If valid, prevent default, show result page
+        e.preventDefault();
+        document.querySelector('.container').innerHTML = `
+            <h1>Search Result</h1>
+            <p>You searched for: <strong>${input.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong></p>
+            <button id="backHome">Return to Home</button>
+        `;
+        document.getElementById('backHome').onclick = function() {
+            window.location.reload();
+        };
+    });
+    </script>
+</body>
+</html>
